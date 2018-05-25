@@ -1,0 +1,41 @@
+ /*Dark.css*/
+.root{
+    -fx-background: rgb(0, 126, 171);
+    /*-fx-background-image: url("/images/oficina.jpg");
+    -fx-background-size: 800 600;
+   	-fx-background-repeat: stretch;
+    -fx-background-position: center center;
+		-fx-background-size: cover;*/
+    /*-fx-effect: dropshadow(three-pass-box, black, 30, 0.5, 0, 0);*/
+    /*-fx-opacity: 0.5; */
+}
+
+.vbox{
+	-fx-background-color: rgb(229, 239, 240);
+	/*-fx-text-fill: black;*/
+}
+
+.my-text {
+	-fx-text-fill: #333333;
+}
+
+.ttip{
+    -fx-background-color: rgb(30,30,30);
+}
+
+.table-view .column-header-background .label{
+    -fx-text-fill: black;
+}
+
+/*.default-color0.chart-series-line { 
+	-fx-stroke: rgb(0, 0, 200); 
+}*/
+
+
+.default-color0.chart-series-line { -fx-stroke: #e9967a; }
+.default-color1.chart-series-line { -fx-stroke: #dda0dd; }
+/*.default-color2.chart-series-line { -fx-stroke: #dda0dd; }*/
+ 
+.default-color0.chart-line-symbol { -fx-background-color: #e9967a, white; }
+.default-color1.chart-line-symbol { -fx-background-color: #dda0dd, white; }
+/*.default-color2.chart-line-symbol { -fx-background-color: #dda0dd, white; }*/

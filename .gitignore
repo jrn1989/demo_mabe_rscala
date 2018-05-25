@@ -1,0 +1,11 @@
+ass
+*.log
+*.aux
+*.swp
+*.pdf
+*.toc
+*.out
+target/
+project/
+metastore_db/
+*.synctex.gz
