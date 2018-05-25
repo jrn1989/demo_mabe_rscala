@@ -27,11 +27,26 @@ case class filaDatos(Aparato:String, Anio:Int, Prediccion:Double){
 object mabeDemo extends JFXApp {
 	import com.arena.encabezadoGUI.defineEncabezado
 	import com.arena.filtroGUI.defineFiltro
+	import com.arena.tablaGUI.defineTablaVista
 		
 	val datosScala = new ObservableBuffer[filaDatos]()
-	val R = org.ddahl.rscala.RClient()
-	val rutaCodigoR = "source('" + new File(".").getCanonicalPath() + "/src/main/resources/R/prueba.R')"
-	//val rutaCodigoRFiltos = "source('" + new File(".").getCanonicalPath() + "/src/main/resources/R/filtros.R')"
+	val R = org.ddahl.rscala.RClient() // Este objeto da acceso a una sesión de R dentro de una instancia de Scala
+	val rutaCodigoR = "source('" + new File(".").getCanonicalPath() + "/src/main/resources/R/prueba.R')" // Ruta donde se encuentra el código de R
+
+	// Función para filtrar datos usando R
+	def aplicarFiltroEnR(filtroAparato:ComboBox[String],filtroAnio:ComboBox[Int]):ObservableBuffer[filaDatos]={
+		val dfScala = new ObservableBuffer[filaDatos]()
+		val codigoR ="dfR<-filtrar('"+filtroAparato.value.apply+"',"+filtroAnio.value.apply+")"
+		R.eval(codigoR) //Para evaluar una expresión de R
+		val col1 = R.evalS1("dfR$Aparato") //Tipo de dato String
+		val col2 = R.evalI1("dfR$Anio") //Tipo de dato Int
+		val col3 = R.evalD1("dfR$Prediccion") //Tipo de dato Double
+
+		for ( i <- 0 to (col1.length - 1)) {
+			dfScala += new filaDatos(col1(i),col2(i),col3(i))				
+		}
+		return dfScala
+	}
 
   stage = new PrimaryStage {
     scene = new Scene {
@@ -39,9 +54,11 @@ object mabeDemo extends JFXApp {
 			icons += new Image((this.getClass.getResourceAsStream("/mabeIcono.png")))
 			stylesheets add getClass.getResource("/estilo.css").toExternalForm
 			root = {				
-
-				R.eval(rutaCodigoR)
 				//R.invoke("imprime",2,2)
+
+				R.eval(rutaCodigoR) //Se ejecuta el script prueba.R, donde se asume que ya se leyeron los datos crudos, se les hizo un 
+				//preprocesamiento y se ajustó un modelo. El resultado final se guarda en un dataframe llamado "modelo" del cual
+				//se extraen las variables relevantes para ser mostradas en el GUI 
 				val col1 = R.evalS1("modelo$Aparato")
 				val col2 = R.evalI1("modelo$Anio")
 				val col3 = R.evalD1("modelo$Prediccion")
@@ -49,66 +66,21 @@ object mabeDemo extends JFXApp {
 				for ( i <- 0 to (col1.length - 1)) {
 					datosScala += new filaDatos(col1(i),col2(i),col3(i))					
 				}
-				//R.eval("imprime<-function(x,y){ print(paste('Los valores son',x,'y',y,sep=' ')) }")
-				//R.eval("imprime(2,3)")
-				//R.eval("source('/home/jrn/Documentos/rscala_test/prueba.R')")
 
 				val botonAplicarFiltro = new Button("Aplicar Filtros")
 				val filtroAparato = new ComboBox[String]
 				val filtroAnio = new ComboBox[Int]
-
-				val colVistaTabla1 = new TableColumn[filaDatos,String]("Aparato")
-				colVistaTabla1.cellValueFactory=cdf=>ObjectProperty(cdf.value.Aparato)
-				//colVistaTabla1.getStyleClass().add("my-text")
-
-				val colVistaTabla2 = new TableColumn[filaDatos,Int]("Año")
-				colVistaTabla2.cellValueFactory=cdf=>ObjectProperty(cdf.value.Anio)
-
-				val colVistaTabla3 = new TableColumn[filaDatos,Double]("Prediccion")
-				colVistaTabla3.cellValueFactory=cdf=>ObjectProperty(cdf.value.Prediccion)
-
-				val tablaVista = new TableView(datosScala)
-				tablaVista.margin=Insets(0, 10, 10, 10)
-
-				tablaVista.columns ++= List(colVistaTabla1,colVistaTabla2,colVistaTabla3)
 
 				val pantallaPrincipal =  new BorderPane {
 					prefHeight = 600
 					prefWidth = 800
 					top = defineEncabezado("Demo rscala","/mabeLogo.png")
 					left = defineFiltro(datosScala,botonAplicarFiltro,filtroAparato,filtroAnio)
-					center = tablaVista
+					center = defineTablaVista(datosScala)
 				}
 
 				botonAplicarFiltro.onAction = (e:ActionEvent) =>  {
-					val cadenaFiltroR ="df<-filtrar('"+filtroAparato.value.apply+"',"+filtroAnio.value.apply+")"
-					println("RESULTADO DE LOS FILTROS APLICADOS")					
-					R.eval(cadenaFiltroR)
-					val col1Filtrada = R.evalS1("df$Aparato")
-					val col2Filtrada = R.evalI1("df$Anio")
-					val col3Filtrada = R.evalD1("df$Prediccion")
-					val datosScalaFiltro = new ObservableBuffer[filaDatos]()
-					for ( i <- 0 to (col1Filtrada.length - 1)) {
-						datosScalaFiltro += new filaDatos(col1Filtrada(i),col2Filtrada(i),col3Filtrada(i))		
-						println(col1Filtrada(i),col2Filtrada(i).toString,col3Filtrada(i).toString)			
-					}
-
-					val colVistaTabla1Filtrada = new TableColumn[filaDatos,String]("Aparato")
-					colVistaTabla1Filtrada.cellValueFactory=cdf=>ObjectProperty(cdf.value.Aparato)
-				
-					val colVistaTabla2Filtrada = new TableColumn[filaDatos,Int]("Año")
-					colVistaTabla2Filtrada.cellValueFactory=cdf=>ObjectProperty(cdf.value.Anio)
-
-					val colVistaTabla3Filtrada = new TableColumn[filaDatos,Double]("Prediccion")
-					colVistaTabla3Filtrada.cellValueFactory=cdf=>ObjectProperty(cdf.value.Prediccion)
-
-					val tablaVistaFiltrada = new TableView(datosScalaFiltro)
-					tablaVistaFiltrada.margin=Insets(0, 10, 10, 10)
-
-					tablaVistaFiltrada.columns ++= List(colVistaTabla1Filtrada,colVistaTabla2Filtrada,colVistaTabla3Filtrada)
-					pantallaPrincipal.center = tablaVistaFiltrada
-
-
+					pantallaPrincipal.center=defineTablaVista(aplicarFiltroEnR(filtroAparato,filtroAnio))
 				}
 
 			pantallaPrincipal

@@ -9,3 +9,4 @@ target/
 project/
 metastore_db/
 *.synctex.gz
+.Rproj.user

@@ -39,7 +39,6 @@ object filtroGUI {
 		filtroAnio.promptText = "-"
 		filtroAnio.items = new ObservableBuffer[Int](tablaDatos.map(_.Anio).distinct.sorted)	
 
-
 		val filtro = new VBox{
 			prefHeight=550
 			prefWidth=250
@@ -51,8 +50,6 @@ object filtroGUI {
 		filtro.getStyleClass().add("vbox")
 		textoFiltroAparato.getStyleClass().add("my-text")
 		textoFiltroAnio.getStyleClass().add("my-text")
-
-
 
 		return filtro
 	}
